@@ -10,6 +10,9 @@ using Jose;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.IO;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 using JwtSettings = budz_backend.Models.Jwt.JwtSettings;
 
 [ApiController]
@@ -100,7 +103,19 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> allowNotification([FromBody] NotficationType[] types)
     {
+        var userID = HttpContext.Items[Utils.SESSION_KEY].ToString();
+        var SettingsString = await Serv.GetField(userID, "Settings");
+        var settings = JsonConvert.DeserializeObject<UserSettings>(SettingsString.ToJson());
         
+        if (!settings.AllowNotification)
+        {
+            return BadRequest("user has notifications disabled");
+        }
+
+        var pushSuccess = await Serv.PushArray(userID, "Settings.AllowedTypes",types);
+        if (pushSuccess)
+            return Ok("provided notification types have been enabled");
+        return BadRequest("could not update allowed notification types");
     }
 
 }

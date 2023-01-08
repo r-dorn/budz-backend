@@ -4,6 +4,7 @@ using budz_backend.Models.Settings;
 using budz_backend.Models.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace budz_backend.Services.User;
@@ -35,7 +36,7 @@ public class UserService
             throw new InvalidRecordException($"{id} does not exist");
         }
 
-        var matchedDocuments =  await col.FindAsync(Builders<MongoUser>.Filter.Eq("_id", id));
+        var matchedDocuments = await col.FindAsync(Builders<MongoUser>.Filter.Eq("_id", id));
         return matchedDocuments.First();
     }
 
@@ -60,11 +61,12 @@ public class UserService
     {
         var excludeFields = Builders<MongoUser>.Projection.Exclude(excludeField);
 
-        var documentFilter = Builders<MongoUser>.Filter.Eq(field,value);
-        if (!await DocumentExists(field,value))
+        var documentFilter = Builders<MongoUser>.Filter.Eq(field, value);
+        if (!await DocumentExists(field, value))
         {
             throw new InvalidRecordException("cannot find document with provided query");
         }
+
         var foundDocuments = col.Find(documentFilter).Project<MongoUser>(excludeFields);
         return foundDocuments.First();
     }
@@ -72,7 +74,7 @@ public class UserService
     public async Task DeleteAsync(string id)
     {
         var filter = Builders<MongoUser>.Filter.Eq("_id", id);
-        if (!await DocumentExists("_id",id))
+        if (!await DocumentExists("_id", id))
         {
             throw new InvalidRecordException("provided id does not exist");
         }
@@ -101,7 +103,18 @@ public class UserService
 
         if (!await DocumentExists("_id", id))
         {
-            
+            throw new InvalidRecordException("provided id does not exist");
         }
+
+        var pushResult = await col.UpdateOneAsync(userFilter, updateFilter);
+        return pushResult.ModifiedCount == 1;
     }
+
+    public async Task<BsonValue> GetField(string id, string field)
+    {
+        var foundUser = col.AsQueryable().Where(x => x.Id == id).First();
+        return foundUser.ToBsonDocument().GetValue(field);
+    }
+
+}
     
