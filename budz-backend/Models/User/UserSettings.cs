@@ -1,6 +1,6 @@
 namespace budz_backend.Models.User.Settings;
 
-public enum NotficationType
+public enum NotificationType
 {
     StrainCreation,
     StrainRestock,
@@ -14,8 +14,8 @@ public enum NotficationType
 
 public record UserSettings
 {
-    public string NotificationChannelID { get; set; } = Guid.NewGuid().ToString();
     public bool AllowNotification { get; set; } = true;
+    public NotificationType[] AllowedTypes { get; set; } = new NotificationType[] { };
 }
 
 

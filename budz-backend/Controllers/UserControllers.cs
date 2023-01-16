@@ -4,7 +4,7 @@
 using System.Text;
 using budz_backend.Models.User;
 using budz_backend.Models.User.Settings;
-using budz_backend.Services.User;
+using budz_backend.Services.MongoDB.User;
 using budz_backend.Utils.Consts;
 using Jose;
 using Microsoft.AspNetCore.Authorization;
@@ -67,22 +67,23 @@ public class UserController : ControllerBase
         var currentTime = DateTimeOffset.UtcNow.AddHours(Utils.MAX_JWT_TTL).ToUnixTimeSeconds();
         var payload = new Dictionary<string, object>()
         {
-            {"exp", currentTime},
-            {"sub", foundUser.Id}
+            { "exp", currentTime },
+            { "sub", foundUser.Id }
         };
-        return Ok(new Dictionary<string,object>()
+        return Ok(new Dictionary<string, object>()
         {
-            {"token", JWT.Encode(payload, ASCIIEncoding.ASCII.GetBytes(Settings.Key), JwsAlgorithm.HS256)}
+            { "token", JWT.Encode(payload, ASCIIEncoding.ASCII.GetBytes(Settings.Key), JwsAlgorithm.HS256) }
         });
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> LogoutUser()
+    public IActionResult LogoutUser()
     {
         if (!HttpContext.Session.Keys.Contains(Utils.SESSION_KEY))
         {
             return Unauthorized("no active session");
         }
+
         HttpContext.Session.Remove(Utils.SESSION_KEY);
         return Ok("logged out");
     }
@@ -95,28 +96,36 @@ public class UserController : ControllerBase
         {
             return Unauthorized("invalid user or password");
         }
+
         await Serv.DeleteAsync(foundUser.Id);
         return Ok("account removed");
     }
 
     [HttpPost("/allow/notification")]
     [Authorize]
-    public async Task<IActionResult> allowNotification([FromBody] NotficationType[] types)
+    public async Task<IActionResult> AllowNotification([FromBody] NotificationType[] types)
     {
         var userID = HttpContext.Items[Utils.SESSION_KEY].ToString();
-        var SettingsString = await Serv.GetField(userID, "Settings");
-        var settings = JsonConvert.DeserializeObject<UserSettings>(SettingsString.ToJson());
-        
+        if (userID is null)
+        {
+            return BadRequest("invalid token provided");
+        }
+
+        var settingsString = await Serv.GetField(userID, "Settings");
+        var settings = JsonConvert.DeserializeObject<UserSettings>(settingsString.ToJson())!;
+
         if (!settings.AllowNotification)
         {
             return BadRequest("user has notifications disabled");
         }
 
-        var pushSuccess = await Serv.PushArray(userID, "Settings.AllowedTypes",types);
+        bool pushSuccess = await Serv.PushArray(userID, "Settings.AllowedTypes", types);
         if (pushSuccess)
             return Ok("provided notification types have been enabled");
         return BadRequest("could not update allowed notification types");
     }
+
+
 
 }
 

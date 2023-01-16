@@ -1,16 +1,18 @@
 using System.Text;
+using budz_backend.Middleware;
 using budz_backend.Models.Jwt;
 using budz_backend.Models.Settings;
-using budz_backend.Services.User;
+using budz_backend.Services.MongoDB.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddJsonOptions(options => {
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
     options.JsonSerializerOptions.IgnoreNullValues = true;
 });
 
@@ -19,11 +21,29 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
+ConnectionMultiplexer redisMultiplexer = ConnectionMultiplexer.Connect(
+    new ConfigurationOptions
+    {
+        User = builder.Configuration.GetSection("Redis:Username").Value,
+        Password = builder.Configuration.GetSection("Redis:Password").Value,
+
+        EndPoints = { builder.Configuration.GetSection("redis:ConnectionString").Value }
+
+    }
+);
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(redisMultiplexer);
+
 
 builder.Services.AddScoped<UserService>();
 
 builder.Services.Configure<MongoConfig>(
     builder.Configuration.GetSection("Mongodb")
+);
+
+
+builder.Services.Configure<RedisSettings>(
+    builder.Configuration.GetSection("Redis")
 );
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -46,6 +66,7 @@ builder.Services.AddSession();
 var app = builder.Build();
 
 app.UseSession();
+app.UseMiddleware<InvalidRecordHandler>();
 app.UseMiddleware<JwtMiddleware>();
 
 // Configure the HTTP request pipeline.

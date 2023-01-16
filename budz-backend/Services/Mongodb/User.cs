@@ -1,13 +1,11 @@
-using System.Net;
 using budz_backend.Exceptions;
 using budz_backend.Models.Settings;
 using budz_backend.Models.User;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace budz_backend.Services.User;
+namespace budz_backend.Services.MongoDB.User;
 
 
 public class UserService
@@ -117,4 +115,3 @@ public class UserService
     }
 
 }
-    

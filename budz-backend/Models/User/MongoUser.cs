@@ -36,11 +36,10 @@ public record MongoUser
 
     public List<string> OwnedStrains { get; set; }
 
-
     public UserSettings Settings = new UserSettings();
     public byte[] ProfilePicture { get; set; } = Array.Empty<byte>();
-
-
+    public string[] FollowedUsers { get; set; } = { };
+    public string[] Followers { get; set; } = { };
 
     public void Setup()
     {

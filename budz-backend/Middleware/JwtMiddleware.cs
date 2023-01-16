@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using budz_backend.Models.User;
-using budz_backend.Services.User;
+using budz_backend.Services.MongoDB.User;
 using Jose;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -13,14 +13,14 @@ public class JwtMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly string Key;
-    
-    public JwtMiddleware(RequestDelegate next, IOptions<JwtSettings>  settings)
+
+    public JwtMiddleware(RequestDelegate next, IOptions<JwtSettings> settings)
     {
         _next = next;
         Key = settings.Value.Key;
     }
 
-    
+
 
     public async Task InvokeAsync(HttpContext context, UserService serv)
     {
@@ -29,7 +29,7 @@ public class JwtMiddleware
             var rawHeader = context.Request.Headers.Authorization.ToString();
 
             var token = rawHeader.Split(" ").Last();
-            
+
             var deserializedBody = JWT.Decode<Dictionary<string, object>>(token);
             var userID = deserializedBody["sub"].ToString();
             if (userID is null)
@@ -49,7 +49,7 @@ public class JwtMiddleware
             context.Items[Utils.Consts.Utils.SESSION_KEY] = user.Id;
             await _next(context);
         }
-        catch (ArgumentException e)
+        catch (ArgumentException)
         {
             await _next(context);
         }
