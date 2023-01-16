@@ -1,6 +1,7 @@
 namespace budz_backend.Models.Notification;
 
 using budz_backend.Models.User.Settings;
+using System.Linq;
 
 public static class NotificationMessageTemplate
 {
@@ -26,12 +27,20 @@ public struct UserInformation
     public string TargetID { get; set; } = String.Empty;
 }
 
-public record RedisNotification
+public record Notification
 {
     public string Title { get; set; } = string.Empty;
     public string NotificationBody { get; set; } = string.Empty;
     public UserInformation Information { get; set; }
     public NotificationType Type { get; set; }
     public bool IsSystem { get; set; } = true;
+
+    public string TruncateMessageBody(string body, int newLength, char trailingCharacter, int charRepeat)
+    {
+        string truncatedString = body.Substring(0, newLength);
+        return truncatedString.Concat(new string(trailingCharacter, charRepeat)).ToString()!;
+    }
+
 }
+
 

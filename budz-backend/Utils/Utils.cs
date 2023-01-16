@@ -11,7 +11,10 @@ public static class Utils
 {
     public const string SESSION_KEY = "user-id";
     public const int MAX_JWT_TTL = 3;
-    
+    public const int MAX_USERNAME_LENGTH = 32;
+    public const string USERNAME_REGEX = @"^[-a-zA-Z0-9]";
+
+
 
     public static string GetToken(string subject, byte[] secretKey)
     {
@@ -23,17 +26,6 @@ public static class Utils
             {"sub", subject}
         };
         return JWT.Encode(payload, secretKey, JwsAlgorithm.RS256);
-    }
-
-
-    public static Dictionary<string, object>? DecodeToken<KeyType>(HttpContext ctx, KeyType key)
-    {
-        var rawHeader = ctx.Request.Headers.Authorization.ToString();
-        if (rawHeader == string.Empty)
-        {
-            return null;
-        }
-        return JWT.Decode<Dictionary<string, object>>(rawHeader.Split(" ").Last());
     }
 
 }
