@@ -1,7 +1,6 @@
 
 
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using budz_backend.Models.User.Settings;
 using MongoDB.Bson.Serialization.Attributes;

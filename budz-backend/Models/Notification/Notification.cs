@@ -27,8 +27,9 @@ public struct UserInformation
     public string TargetID { get; set; } = String.Empty;
 }
 
-public record Notification
+public record InternalNotification
 {
+    public string NotficationID { get; set; } = Guid.NewGuid().ToString();
     public string Title { get; set; } = string.Empty;
     public string NotificationBody { get; set; } = string.Empty;
     public UserInformation Information { get; set; }
@@ -43,4 +44,10 @@ public record Notification
 
 }
 
+public record Notification
+{
+    public string Title { get; set; } = string.Empty;
+    public string Body { get; set; } = string.Empty;
+    public string SentBy { get; set; } = string.Empty;
+}
 

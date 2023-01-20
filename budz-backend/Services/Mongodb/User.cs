@@ -4,8 +4,10 @@ using budz_backend.Models.User;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Opw.HttpExceptions;
+using Newtonsoft.Json;
 
-namespace budz_backend.Services.MongoDB.User;
+namespace budz_backend.Services.MongoServices.User;
 
 
 public class UserService
@@ -31,9 +33,8 @@ public class UserService
     {
         if (!await DocumentExists("_id", id))
         {
-            throw new InvalidRecordException($"{id} does not exist");
+            throw new BadRequestException("user does not exist");
         }
-
         var matchedDocuments = await col.FindAsync(Builders<MongoUser>.Filter.Eq("_id", id));
         return matchedDocuments.First();
     }
@@ -43,7 +44,7 @@ public class UserService
         var searchQuery = Builders<MongoUser>.Filter.Eq(field, value);
         if (!await DocumentExists(field, value))
         {
-            throw new InvalidRecordException("cannot find any documents with provided query");
+            throw new BadRequestException("cannot find any documents with provided query");
         }
 
         var foundDocuments = await col.FindAsync(searchQuery);
@@ -62,7 +63,7 @@ public class UserService
         var documentFilter = Builders<MongoUser>.Filter.Eq(field, value);
         if (!await DocumentExists(field, value))
         {
-            throw new InvalidRecordException("cannot find document with provided query");
+            throw new BadRequestException("cannot find document with provided query");
         }
 
         var foundDocuments = col.Find(documentFilter).Project<MongoUser>(excludeFields);
@@ -74,7 +75,7 @@ public class UserService
         var filter = Builders<MongoUser>.Filter.Eq("_id", id);
         if (!await DocumentExists("_id", id))
         {
-            throw new InvalidRecordException("provided id does not exist");
+            throw new BadHttpRequestException("provided id does not exist");
         }
 
         await col.DeleteOneAsync(filter);
@@ -108,10 +109,10 @@ public class UserService
         return pushResult.ModifiedCount == 1;
     }
 
-    public async Task<BsonValue> GetField(string id, string field)
+    public async Task<T?> GetField<T>(string id, string field)
     {
         var foundUser = col.AsQueryable().Where(x => x.Id == id).First();
-        return foundUser.ToBsonDocument().GetValue(field);
+        return JsonConvert.DeserializeObject<T>(foundUser.ToString());
     }
 
 }
