@@ -10,12 +10,16 @@ public enum NotificationType
     Dislike,
     UniqueStrainRequest,
     StrainOrder
-};
+}
 
 public record UserSettings
 {
     public bool AllowNotification { get; set; } = true;
-    public NotificationType[] AllowedTypes { get; set; } = new NotificationType[] { };
+    public NotificationType[] AllowedTypes { get; set; } = { };
 }
 
+public record AllowNotification
+{
+    public NotficationType[] Types { get; set; }
+}
 

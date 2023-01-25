@@ -2,13 +2,10 @@ using budz_backend.Exceptions;
 using budz_backend.Models.Settings;
 using budz_backend.Models.User;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using Opw.HttpExceptions;
 using Newtonsoft.Json;
 
 namespace budz_backend.Services.MongoServices.User;
-
 
 public class UserService
 {
@@ -31,10 +28,7 @@ public class UserService
 
     public async Task<MongoUser> GetAsync(string id)
     {
-        if (!await DocumentExists("_id", id))
-        {
-            throw new BadRequestException("user does not exist");
-        }
+        if (!await DocumentExists("_id", id)) throw new BadRequestException("user does not exist");
         var matchedDocuments = await col.FindAsync(Builders<MongoUser>.Filter.Eq("_id", id));
         return matchedDocuments.First();
     }
@@ -45,7 +39,6 @@ public class UserService
         if (!await DocumentExists(field, value))
         {
             throw new BadRequestException("cannot find any documents with provided query");
-        }
 
         var foundDocuments = await col.FindAsync(searchQuery);
         return foundDocuments.First();
@@ -62,9 +55,7 @@ public class UserService
 
         var documentFilter = Builders<MongoUser>.Filter.Eq(field, value);
         if (!await DocumentExists(field, value))
-        {
             throw new BadRequestException("cannot find document with provided query");
-        }
 
         var foundDocuments = col.Find(documentFilter).Project<MongoUser>(excludeFields);
         return foundDocuments.First();
@@ -73,10 +64,7 @@ public class UserService
     public async Task DeleteAsync(string id)
     {
         var filter = Builders<MongoUser>.Filter.Eq("_id", id);
-        if (!await DocumentExists("_id", id))
-        {
-            throw new BadHttpRequestException("provided id does not exist");
-        }
+        if (!await DocumentExists("_id", id)) throw new BadHttpRequestException("provided id does not exist");
 
         await col.DeleteOneAsync(filter);
     }
@@ -86,10 +74,7 @@ public class UserService
         var userFilter = Builders<MongoUser>.Filter.Eq("_id", id);
         var updateFilter = Builders<MongoUser>.Update.Set(field, newValue);
 
-        if (!await DocumentExists("_id", id))
-        {
-            throw new InvalidRecordException($"{id} is not a valid id");
-        }
+        if (!await DocumentExists("_id", id)) throw new InvalidRecordException($"{id} is not a valid id");
 
         var updateResult = await col.UpdateOneAsync(userFilter, updateFilter);
         return updateResult.ModifiedCount == 1;
@@ -100,10 +85,7 @@ public class UserService
         var userFilter = Builders<MongoUser>.Filter.Eq("_id", id);
         var updateFilter = Builders<MongoUser>.Update.PushEach(arrayField, mergeArray);
 
-        if (!await DocumentExists("_id", id))
-        {
-            throw new InvalidRecordException("provided id does not exist");
-        }
+        if (!await DocumentExists("_id", id)) throw new InvalidRecordException("provided id does not exist");
 
         var pushResult = await col.UpdateOneAsync(userFilter, updateFilter);
         return pushResult.ModifiedCount == 1;
@@ -114,5 +96,4 @@ public class UserService
         var foundUser = col.AsQueryable().Where(x => x.Id == id).First();
         return JsonConvert.DeserializeObject<T>(foundUser.ToString());
     }
-
 }

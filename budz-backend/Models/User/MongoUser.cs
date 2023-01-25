@@ -1,11 +1,7 @@
-
-
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using budz_backend.Models.User.Settings;
 using MongoDB.Bson.Serialization.Attributes;
-
-
 
 namespace budz_backend.Models.User;
 
@@ -17,6 +13,8 @@ public enum RoleType
 
 public record MongoUser
 {
+    public UserSettings Settings = new();
+
     [Required]
     [BsonId]
     [BsonElement("_id")]
@@ -34,8 +32,6 @@ public record MongoUser
     [Required] public RoleType Role { get; set; }
 
     public List<string> OwnedStrains { get; set; }
-
-    public UserSettings Settings = new UserSettings();
     public byte[] ProfilePicture { get; set; } = Array.Empty<byte>();
     public string[] FollowedUsers { get; set; } = { };
     public string[] Followers { get; set; } = { };

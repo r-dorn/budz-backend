@@ -1,24 +1,20 @@
-
-using budz_backend.Models.User;
 using budz_backend.Services.MongoServices.User;
 using Jose;
 using Microsoft.Extensions.Options;
-using Settings = budz_backend.Models.Settings.Jwt;
+using Settings = budz_backend.Models.Settings;
 
 namespace budz_backend.Middleware;
-
 
 public class JwtMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly string Key;
 
-    public JwtMiddleware(RequestDelegate next, IOptions<Settings.JwtSettings> settings)
+    public JwtMiddleware(RequestDelegate next, IOptions<JwtSettings> settings)
     {
         _next = next;
         Key = settings.Value.Key;
     }
-
 
 
     public async Task InvokeAsync(HttpContext context, UserService serv)
@@ -38,11 +34,12 @@ public class JwtMiddleware
                 return;
             }
 
-            MongoUser user = await serv.GetAsync(userID);
+            var user = await serv.GetAsync(userID);
             if (user.IsBanned)
             {
                 context.Response.StatusCode = 403;
                 await context.Response.WriteAsync("user is banned");
+                return;
             }
 
             context.Items[Utils.Consts.Utils.SESSION_KEY] = user.Id;
