@@ -2,7 +2,6 @@ using budz_backend.Exceptions;
 using budz_backend.Models.Settings;
 using budz_backend.Models.User;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using Opw.HttpExceptions;
 using Newtonsoft.Json;
