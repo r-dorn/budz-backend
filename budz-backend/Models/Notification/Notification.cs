@@ -7,7 +7,7 @@ public static class NotificationMessageTemplate
     public static Dictionary<NotificationType, string> NOTIFICATION_TITLE = new()
     {
         { NotificationType.StrainRestock, "{0} restocked {1}" },
-        { NotificationType.StrainOrder, "{0} requested {1} grams of {2}" },
+        { NotificationType.StrainOrder, "{0} placed order" },
         { NotificationType.StrainCreation, "{0} published {1}" },
         { NotificationType.UniqueStrainRequest, "{0} added new strain request" },
         { NotificationType.Comment, "{0} commented on {1}" }

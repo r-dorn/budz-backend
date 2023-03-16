@@ -1,3 +1,5 @@
+using budz_backend.Exceptions;
+
 namespace budz_backend.Services.Redis;
 using NReJSON;
 using StackExchange.Redis;
@@ -28,22 +30,23 @@ public class RedisService
         return generatedID;
     }
 
-    public async Task<Dictionary<string, object>>? Get(string documentID)
+    public async Task<T?> Get<T>(string documentID)
     {
         if (!_database.KeyExists(documentID))
         {
-            return null;
+            return (T)(object)null;
         }
-        return _database.JsonGet<Dictionary<string, object>>(documentID);
+        return _database.JsonGet<T>(documentID);
     }
 
 
-    public async Task Set<T>(string key, T? jsonModel)
+    public async Task<bool> Set<T>(string key, T? jsonModel, bool overrwite)
     {
-        if (_database.KeyExists(key))
+        if (_database.KeyExists(key) && !overrwite)
         {
-            throw new 
+            return false;
         }
+        return _database.JsonSet(key, jsonModel).IsSuccess;
     }
-
+    
 }

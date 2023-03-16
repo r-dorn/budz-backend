@@ -10,7 +10,7 @@ public class JwtMiddleware
     private readonly RequestDelegate _next;
     private readonly string Key;
 
-    public JwtMiddleware(RequestDelegate next, IOptions<JwtSettings> settings)
+    public JwtMiddleware(RequestDelegate next, IOptions<Settings.Jwt.JwtSettings> settings)
     {
         _next = next;
         Key = settings.Value.Key;

@@ -10,8 +10,6 @@ using Jose;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
 using JwtSettings = budz_backend.Models.Settings.Jwt;
 
 [ApiController]

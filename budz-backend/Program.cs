@@ -3,7 +3,8 @@ using budz_backend.Models.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using budz_backend.Services.MongoServices.User;
-
+using budz_backend.Middleware;
+using budz_backend.Models.Settings.Jwt;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 var app = builder.Build();
+
+
 
 app.UseSession();
 app.UseMiddleware<JwtMiddleware>();

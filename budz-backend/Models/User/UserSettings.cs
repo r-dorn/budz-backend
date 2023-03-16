@@ -1,10 +1,13 @@
+
+
 namespace budz_backend.Models.User.Settings;
+
 
 public enum NotificationType
 {
     StrainCreation,
     StrainRestock,
-    Comment,
+    Comment, 
     Reply,
     Like,
     Dislike,
@@ -20,6 +23,6 @@ public record UserSettings
 
 public record AllowNotification
 {
-    public NotficationType[] Types { get; set; }
+    public NotificationType[] Types { get; set; }
 }
 

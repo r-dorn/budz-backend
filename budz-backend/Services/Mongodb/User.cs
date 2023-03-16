@@ -2,8 +2,9 @@ using budz_backend.Exceptions;
 using budz_backend.Models.Settings;
 using budz_backend.Models.User;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json;
+using Opw.HttpExceptions;
 
 namespace budz_backend.Services.MongoServices.User;
 
@@ -39,6 +40,7 @@ public class UserService
         if (!await DocumentExists(field, value))
         {
             throw new BadRequestException("cannot find any documents with provided query");
+        }
 
         var foundDocuments = await col.FindAsync(searchQuery);
         return foundDocuments.First();
@@ -55,8 +57,10 @@ public class UserService
 
         var documentFilter = Builders<MongoUser>.Filter.Eq(field, value);
         if (!await DocumentExists(field, value))
+        {
             throw new BadRequestException("cannot find document with provided query");
-
+        }
+        
         var foundDocuments = col.Find(documentFilter).Project<MongoUser>(excludeFields);
         return foundDocuments.First();
     }
@@ -64,7 +68,10 @@ public class UserService
     public async Task DeleteAsync(string id)
     {
         var filter = Builders<MongoUser>.Filter.Eq("_id", id);
-        if (!await DocumentExists("_id", id)) throw new BadHttpRequestException("provided id does not exist");
+        if (!await DocumentExists("_id", id))
+        {
+            throw new BadHttpRequestException("provided id does not exist");
+        }
 
         await col.DeleteOneAsync(filter);
     }
@@ -85,7 +92,10 @@ public class UserService
         var userFilter = Builders<MongoUser>.Filter.Eq("_id", id);
         var updateFilter = Builders<MongoUser>.Update.PushEach(arrayField, mergeArray);
 
-        if (!await DocumentExists("_id", id)) throw new InvalidRecordException("provided id does not exist");
+        if (!await DocumentExists("_id", id))
+        {
+            throw new InvalidRecordException("provided id does not exist");
+        }
 
         var pushResult = await col.UpdateOneAsync(userFilter, updateFilter);
         return pushResult.ModifiedCount == 1;
@@ -93,7 +103,8 @@ public class UserService
 
     public async Task<T?> GetField<T>(string id, string field)
     {
-        var foundUser = col.AsQueryable().Where(x => x.Id == id).First();
-        return JsonConvert.DeserializeObject<T>(foundUser.ToString());
+        var foundUser = col.AsQueryable().Where(x => x.Id == id);
+        var e = foundUser.First().ToBsonDocument();
+        return (T)(object)e.ToBsonDocument().GetValue(field);
     }
 }
